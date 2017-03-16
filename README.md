@@ -69,7 +69,48 @@ example above, it's going to end up applying to any promise.
 Instead of an `import()` it could be a `fetch()` with a cached result.
 
 ```js
-fetch('./data.json')
+class Component extends React.Component {
+  constructor(props) {
+    super(props);
+    
+    let promise = fetch('./data.json');
+    let { state, value } = promise.inspect();
+
+    this.promise = promise;
+    this.promiseState = state;
+    
+    if (state === 'fulfilled') {
+      this.state = {
+        loading: false,
+        data: value
+      };
+    } else {
+      this.state = {
+        loading: true,
+        data: null
+      };
+    }
+  }
+
+  componentDidMount() {
+    if (this.promiseState !== 'fulfilled') {
+      this.promise.then(data => {
+        this.setState({
+          loading: false,
+          data
+        });
+      });
+    }
+  }
+
+  render() {
+    return (
+      <div>
+        {this.state.loading ? 'Loading...' : this.state.data}
+      </div>
+    );
+  }
+}
 ```
 
 It could be a memoized async function.
